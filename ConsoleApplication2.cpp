@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 		}
 	} else {
 		MPI_Recv(msg, 20, MPI_CHAR, 0, tag, MPI_COMM_WORLD, &status);
-		printf("Received message, hello from other thread!");
+		printf("Received message, hello from other thread! %p", msg);
 	}
 	
 	MPI_Finalize();
