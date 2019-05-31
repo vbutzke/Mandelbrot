@@ -1,5 +1,10 @@
 #include <iostream>
 #include <mpi.h>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 int main(int argc, char **argv)
 {
@@ -24,4 +29,21 @@ int main(int argc, char **argv)
 	
 	MPI_Finalize();
 	return 0;
+}
+
+GLfloat* mandelbrot_equation(float x, float y) {
+	GLfloat result[] = { 1.0f, 1.0f, 1.0f };
+	float xReduce = x - (1 / 4);
+	float ho = sqrt(pow(xReduce, 2) + pow(y, 2));
+	float theta = atanf(y / xReduce);
+	float hoPoint = 0.5f - (0.5f * cos(theta));
+
+	if (ho <= hoPoint) {
+		result[0] = result[1] = result[2] = 0.0f;
+		//pertence a Mandelbrot, pinta diferente
+	}
+	else {
+		//não pertence
+	}
+	return result;
 }
