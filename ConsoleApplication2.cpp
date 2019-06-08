@@ -5,14 +5,22 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Shader.h"
+
+using namespace std;
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+GLFWwindow* init();
+
+const GLuint WIDTH = 800, HEIGHT = 600;
 
 int main(int argc, char **argv)
 {
 	int rank, size, tag = 0, i = 0;
 	MPI_Status status;
 	int *sendBuffer, receiveBuffer;
-	char msg[20];
-
+	
+	//keep it simple. Try to draw a triangle first
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -40,7 +48,7 @@ int main(int argc, char **argv)
 			result += sendBuffer[i];
 		}
 		printf("Result is: %d", result);
-		
+		//loop here
 	}	
 
 	
@@ -83,4 +91,29 @@ GLfloat* mandelbrot_equation(float x, float y) {
 		//não pertence
 	}
 	return result;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+GLFWwindow* init() {
+	glfwInit();
+
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
+	glfwMakeContextCurrent(window);
+	glfwSetKeyCallback(window, key_callback);
+	glewExperimental = GL_TRUE;
+	glewInit();
+
+	const GLubyte* renderer = glGetString(GL_RENDERER);
+	const GLubyte* version = glGetString(GL_VERSION);
+	cout << "Renderer: " << renderer << endl;
+	cout << "OpenGL version supported " << version << endl;
+
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+	glViewport(0, 0, width, height);
+	return window;
 }
