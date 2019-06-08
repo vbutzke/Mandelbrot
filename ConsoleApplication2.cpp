@@ -19,22 +19,27 @@ int main(int argc, char **argv)
 
 	sendBuffer = (int *)malloc(size*sizeof(int));
 
-	if (rank == 0) {
-		for (int i = 0; i < size; i++) {
-			sendBuffer[i] = i * i;
-		}
-	}
+	//if (rank == 0) {
+	//	for (int i = 0; i < size; i++) {
+	//		sendBuffer[i] = i * i;
+	//	}
+	//}
 	MPI_Scatter(sendBuffer, 1, MPI_INT, &receiveBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	
+	receiveBuffer = rank * 2;
 	if (rank != 0) {
+		 
 		printf("I'm thread %d !", rank);
 	}
 
 	MPI_Gather(&receiveBuffer, 1, MPI_INT, sendBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	
 	if(rank == 0){
-		for (int i = 0; i < size; i++)
+		int result = 0;
+		for (int i = 0; i < size; i++) {
 			printf("(%d) - received %d\n", rank, sendBuffer[i]);
+			result += sendBuffer[i];
+		}
+		printf("Result is: %d", result);
 		
 	}	
 
