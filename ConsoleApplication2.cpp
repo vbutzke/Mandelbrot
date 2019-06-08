@@ -18,12 +18,12 @@ int main(int argc, char **argv)
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	sendBuffer = (int *)malloc(size*sizeof(int));
-	//receiveBuffer = (int*)malloc(size * sizeof(int));
-	//sendBuffer = rank * rank;
-	for (int i = 0; i < size; i++) {
-		sendBuffer[i] = i * i;
-	}
 
+	if (rank == 0) {
+		for (int i = 0; i < size; i++) {
+			sendBuffer[i] = i * i;
+		}
+	}
 	MPI_Scatter(sendBuffer, 1, MPI_INT, &receiveBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	
 	if (rank != 0) {
@@ -32,7 +32,6 @@ int main(int argc, char **argv)
 
 	MPI_Gather(&receiveBuffer, 1, MPI_INT, sendBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	
-
 	if(rank == 0){
 		for (int i = 0; i < size; i++)
 			printf("(%d) - received %d\n", rank, sendBuffer[i]);
