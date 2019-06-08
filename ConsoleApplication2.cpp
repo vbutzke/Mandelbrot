@@ -19,46 +19,46 @@ const GLuint WIDTH = 800, HEIGHT = 600;
 
 int main(int argc, char **argv)
 {
-	int rank, size, tag = 0, i = 0;
-	MPI_Status status;
-	int *sendBuffer, receiveBuffer;
-	
-	//keep it simple. Try to draw a triangle first
-	MPI_Init(&argc, &argv);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-	sendBuffer = (int *)malloc(size*sizeof(int));
-
-	//if (rank == 0) {
+	//int rank, size, tag = 0, i = 0;
+	//MPI_Status status;
+	//int *sendBuffer, receiveBuffer;
+	//
+	////keep it simple. Try to draw a triangle first
+	//MPI_Init(&argc, &argv);
+	//MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	//MPI_Comm_size(MPI_COMM_WORLD, &size);
+	//
+	//sendBuffer = (int *)malloc(size*sizeof(int));
+	//
+	////if (rank == 0) {
 	//	for (int i = 0; i < size; i++) {
 	//		sendBuffer[i] = i * i;
 	//	}
 	//}
-	MPI_Scatter(sendBuffer, 1, MPI_INT, &receiveBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	receiveBuffer = rank * 2;
-	if (rank != 0) {
-		 
-		printf("I'm thread %d !", rank);
-	}
-
-	MPI_Gather(&receiveBuffer, 1, MPI_INT, sendBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	
-	if(rank == 0){
-		int result = 0;
-		for (int i = 0; i < size; i++) {
-			printf("(%d) - received %d\n", rank, sendBuffer[i]);
-			result += sendBuffer[i];
-		}
-		printf("Result is: %d", result);
+	//MPI_Scatter(sendBuffer, 1, MPI_INT, &receiveBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	//receiveBuffer = rank * 2;
+	//if (rank != 0) {
+	//	 
+	//	printf("I'm thread %d !", rank);
+	//}
+	//
+	//MPI_Gather(&receiveBuffer, 1, MPI_INT, sendBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	//
+	//if(rank == 0){
+	//	int result = 0;
+	//	for (int i = 0; i < size; i++) {
+	//		printf("(%d) - received %d\n", rank, sendBuffer[i]);
+	//		result += sendBuffer[i];
+	//	}
+	//	printf("Result is: %d", result);
 		draw();
-		//loop here
+	//	//loop here
 		glfwTerminate();
-	}	
-
-	
-
-	//if (rank == 0) {
+	//}	
+	//
+	//
+	//
+	////if (rank == 0) {
 	//	//root
 	//	//faz um scatter
 	//	strcpy_s(msg, "Hello thread!");
@@ -76,8 +76,8 @@ int main(int argc, char **argv)
 	//	printf("Received message, hello from other thread! %p", msg);
 	//	//cálculo
 	//}
-	
-	MPI_Finalize();
+	//
+	//MPI_Finalize();
 	return 0;
 }
 
@@ -125,7 +125,7 @@ GLFWwindow* init() {
 
 void draw() {
 	GLFWwindow* window = init();
-	Shader shader("../shaders/shader.vs", "../shaders/shader.frag");
+	Shader shader("shaders/shader.vs", "shaders/shader.frag");
 	
 	GLfloat vertices[] = {
 		-0.5f, -0.5f, 0.0f, // Left  
