@@ -10,22 +10,55 @@ int main(int argc, char **argv)
 {
 	int rank, size, tag = 0, i = 0;
 	MPI_Status status;
+	int *sendBuffer, receiveBuffer;
 	char msg[20];
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	
-	if (rank == 0) {
-		strcpy_s(msg, "Hello thread!");
-		for (i = 1; i < size; i++) {
-			MPI_Send(msg, 13, MPI_CHAR, i, tag, MPI_COMM_WORLD);
-			printf("Message sent!");
-		}
-	} else {
-		MPI_Recv(msg, 20, MPI_CHAR, 0, tag, MPI_COMM_WORLD, &status);
-		printf("Received message, hello from other thread! %p", msg);
+
+	sendBuffer = (int *)malloc(size*sizeof(int));
+	//receiveBuffer = (int*)malloc(size * sizeof(int));
+	//sendBuffer = rank * rank;
+	for (int i = 0; i < size; i++) {
+		sendBuffer[i] = i * i;
 	}
+
+	MPI_Scatter(sendBuffer, 1, MPI_INT, &receiveBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	
+	if (rank != 0) {
+		printf("I'm thread %d !", rank);
+	}
+
+	MPI_Gather(&receiveBuffer, 1, MPI_INT, sendBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	
+
+	if(rank == 0){
+		for (int i = 0; i < size; i++)
+			printf("(%d) - received %d\n", rank, sendBuffer[i]);
+		
+	}	
+
+	
+
+	//if (rank == 0) {
+	//	//root
+	//	//faz um scatter
+	//	strcpy_s(msg, "Hello thread!");
+	//	for (i = 1; i < size; i++) {
+	//		MPI_Send(msg, 13, MPI_CHAR, i, tag, MPI_COMM_WORLD);
+	//		printf("Message sent!");
+	//	}
+	//	//gather
+	//	//loop de desenho
+	//
+	//} else {
+	//	//filhos
+	//	//processa e manda de volta
+	//	MPI_Recv(msg, 20, MPI_CHAR, 0, tag, MPI_COMM_WORLD, &status);
+	//	printf("Received message, hello from other thread! %p", msg);
+	//	//cálculo
+	//}
 	
 	MPI_Finalize();
 	return 0;
