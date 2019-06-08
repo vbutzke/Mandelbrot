@@ -30,11 +30,6 @@ int main(int argc, char **argv)
 	
 	sendBuffer = (int *)malloc(size*sizeof(int));
 	
-	if (rank == 0) {
-		for (int i = 0; i < size; i++) {
-			sendBuffer[i] = i * i;
-		}
-	}
 	MPI_Scatter(sendBuffer, 1, MPI_INT, &receiveBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
 	receiveBuffer = rank * 2;
 	if (rank != 0) {
@@ -52,31 +47,9 @@ int main(int argc, char **argv)
 		}
 		printf("Result is: %d", result);
 		draw();
-		//loop here
 		glfwTerminate();
 	}	
-	//
-	//
-	//
-	////if (rank == 0) {
-	//	//root
-	//	//faz um scatter
-	//	strcpy_s(msg, "Hello thread!");
-	//	for (i = 1; i < size; i++) {
-	//		MPI_Send(msg, 13, MPI_CHAR, i, tag, MPI_COMM_WORLD);
-	//		printf("Message sent!");
-	//	}
-	//	//gather
-	//	//loop de desenho
-	//
-	//} else {
-	//	//filhos
-	//	//processa e manda de volta
-	//	MPI_Recv(msg, 20, MPI_CHAR, 0, tag, MPI_COMM_WORLD, &status);
-	//	printf("Received message, hello from other thread! %p", msg);
-	//	//cálculo
-	//}
-	//
+	
 	MPI_Finalize();
 	return 0;
 }
