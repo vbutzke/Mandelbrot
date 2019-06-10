@@ -11,9 +11,10 @@
 
 using namespace std;
 
+GLfloat* dummyFunc(GLfloat* pixels);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 GLFWwindow* init();
-void draw();
+void draw(GLfloat* vertices);
 
 const GLuint WIDTH = 800, HEIGHT = 600;
 
@@ -21,37 +22,74 @@ int main(int argc, char **argv)
 {
 	int rank, size, tag = 0, i = 0;
 	MPI_Status status;
-	int *sendBuffer, receiveBuffer;
-	
+	float* buffer = NULL;
+	float* data = (float*)malloc(9 * sizeof(float));
+	float* imageData = NULL;
+	float* pixel = NULL;
+
 	//keep it simple. Try to draw a triangle first
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	
-	sendBuffer = (int *)malloc(size*sizeof(int));
-	
-	MPI_Scatter(sendBuffer, 1, MPI_INT, &receiveBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
-	receiveBuffer = rank * 2;
-	if (rank != 0) {
-		 
-		printf("I'm thread %d !", rank);
+	if (rank == 0) {
+		data[0] = -0.5f;
+		data[1] = -0.5f;
+		data[2] = 0.0f;
+		data[3] = 0.5f;
+		data[4] = -0.5f;
+		data[5] = 0.0f;
+		data[6] = 0.0f;
+		data[7] = 0.5f;
+		data[8] = 0.0f;
+		printf("Data built!\n");
 	}
 	
-	MPI_Gather(&receiveBuffer, 1, MPI_INT, sendBuffer, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	buffer = (float*)malloc(3 * sizeof(float)); //size
+	printf("(%d) Scattering ! \n", rank);
+	MPI_Scatter(data, 3, MPI_FLOAT, buffer, 3, MPI_FLOAT, 0, MPI_COMM_WORLD);
 	
-	if(rank == 0){
-		int result = 0;
-		for (int i = 0; i < size; i++) {
-			printf("(%d) - received %d\n", rank, sendBuffer[i]);
-			result += sendBuffer[i];
-		}
-		printf("Result is: %d", result);
-		draw();
-		glfwTerminate();
-	}	
+	printf("Data in buffer: %g, %g, %g \n", buffer[0], buffer[1], buffer[2]);
+	//pixel = mandelbrot do buffer
+	printf("(%d) Buffer out ! \n", rank);
 	
+	//compute the mandelbrot for the buffer
+	if (rank == 0) {
+		imageData = (float*)malloc(9 * sizeof(float));
+		printf("(%d) Image here ! \n", rank);
+	}
+
+	MPI_Barrier(MPI_COMM_WORLD);
+	printf("(%d) Gathering !\n ", rank);
+	MPI_Gather(buffer, 3, MPI_FLOAT, imageData, 3, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
+	if (rank == 0) {
+		printf("Data in imageData: %g, %g, %g, %g, %g, %g, %g, %g, %g\n",
+			imageData[0], imageData[1], imageData[2],
+			imageData[3], imageData[4], imageData[5],
+			imageData[6], imageData[7], imageData[8]);
+		printf("(%d) Go draw yo ! \n", rank);
+		
+		printf("(%d) Bye baby bye bye ! \n", rank);
+	}
+
+	free(buffer);
+	free(data);
+	free(pixel);
+	MPI_Barrier(MPI_COMM_WORLD);
 	MPI_Finalize();
+
+	if (rank == 0) {
+		draw(imageData);
+		glfwTerminate();
+	}
+	free(imageData);
+	
 	return 0;
+}
+
+GLfloat* dummyFunc(GLfloat* pixels) {
+	return pixels;
 }
 
 GLfloat* mandelbrot_equation(float x, float y) {
@@ -96,14 +134,14 @@ GLFWwindow* init() {
 	return window;
 }
 
-void draw() {
+void draw(GLfloat* vertices) {
 	GLFWwindow* window = init();
 	Shader shader("shaders/shader.vs", "shaders/shader.frag");
 	
-	GLfloat vertices[] = {
-		-0.5f, -0.5f, 0.0f, // Left  
-		0.5f, -0.5f, 0.0f, // Right 
-		0.0f,  0.5f, 0.0f  // Top   
+	GLfloat vertices2[] = {
+		vertices[0], vertices[1], vertices[2], // Left  
+		vertices[3], vertices[4], vertices[5], // Right 
+		vertices[6], vertices[7], vertices[8]  // Top   
 	};
 	
 	GLuint VBO, VAO;
@@ -111,7 +149,7 @@ void draw() {
 	glGenBuffers(1, &VBO);
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
